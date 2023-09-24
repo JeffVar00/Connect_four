@@ -37,27 +37,39 @@ class ComputerPlayer(Player):
             self.switch_turn()
 
     def minimax(self, depth, maximizing_player):
+        """
+        Returns the optimal evaluation value for the current game state using the minimax algorithm.
+
+        Args:
+            depth (int): The current depth of the search tree.
+            maximizing_player (bool): True if it's the maximizing player's turn, False otherwise.
+
+        Returns:
+            float: The optimal evaluation value for the current game state.
+        """
         # Base case - evaluation at leaf nodes
-        if depth == 0 or self.check_winner():
+        if depth == 0:
             return self.evaluate_board()
-        
+
         # Recursive case - maximizer's turn
         if maximizing_player:
             max_eval = float('-inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.minimax(depth-1, False)
-                    self.undo_move(col)
-                    max_eval = max(max_eval, eval)
+            for col in (col for col in range(7) if self.make_move(col)):
+                eval = self.minimax(depth-1, False)
+                self.undo_move(col)
+                max_eval = max(max_eval, eval)
+                if max_eval == 1:  # Early exit if winning move found
+                    break
             return max_eval
         # Recursive case - minimizer's turn
         else:
             min_eval = float('inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.minimax(depth-1, True)
-                    self.undo_move(col)
-                    min_eval = min(min_eval, eval)          
+            for col in (col for col in range(7) if self.make_move(col)):
+                eval = self.minimax(depth-1, True)
+                self.undo_move(col)
+                min_eval = min(min_eval, eval)
+                if min_eval == -1:  # Early exit if losing move found
+                    break
             return min_eval
     
     # Alpha-beta pruning

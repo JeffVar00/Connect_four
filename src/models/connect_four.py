@@ -77,73 +77,72 @@ class ConnectFour:
     # Evaluation function for Minimax and Alpha-Beta pruning
     def evaluate_board(self):
         score = 0
+        directions = [(0, 1), (0, -1), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
         for i in range(6):
             for j in range(7):
                 if self.board[i][j] == self.turn:
                     # favor moves that block the opponent's potential wins
-                    # check horizontal
-                    if j < 4 and self.board[i][j+1] == self.turn and self.board[i][j+2] == self.turn and self.board[i][j+3] == 0:
-                        score += 1
-                    if j > 2 and self.board[i][j-1] == self.turn and self.board[i][j-2] == self.turn and self.board[i][j-3] == 0:
-                        score += 1
-                    # check vertical
-                    if i < 3 and self.board[i+1][j] == self.turn and self.board[i+2][j] == self.turn and self.board[i+3][j] == 0:
-                        score += 1
-                    # check diagonal to the right
-                    if i < 3 and j < 4 and self.board[i+1][j+1] == self.turn and self.board[i+2][j+2] == self.turn and self.board[i+3][j+3] == 0:
-                        score += 1
-                    if i > 2 and j > 2 and self.board[i-1][j-1] == self.turn and self.board[i-2][j-2] == self.turn and self.board[i-3][j-3] == 0:
-                        score += 1
-                    # check diagonal to the left
-                    if i < 3 and j > 2 and self.board[i+1][j-1] == self.turn and self.board[i+2][j-2] == self.turn and self.board[i+3][j-3] == 0:
-                        score += 1
-                    if i > 2 and j < 4 and self.board[i-1][j+1] == self.turn and self.board[i-2][j+2] == self.turn and self.board[i-3][j+3] == 0:
-                        score += 1
+                    for direction in directions:
+                        count = 0
+                        for k in range(1, 4):
+                            row = i + direction[0] * k
+                            col = j + direction[1] * k
+                            if 0 <= row < 6 and 0 <= col < 7 and self.board[row][col] == self.turn:
+                                count += 1
+                            else:
+                                break
+                        if count == 3 and 0 <= i + direction[0] * 4 < 6 and 0 <= j + direction[1] * 4 < 7 and self.board[i + direction[0] * 4][j + direction[1] * 4] == 0:
+                            score += 1
                 elif self.board[i][j] == 3 - self.turn:
                     # favor moves that result in the opponent being unable to block our win
-                    # check horizontal
-                    if j < 4 and self.board[i][j+1] == (3 - self.turn) and self.board[i][j+2] == (3 - self.turn) and self.board[i][j+3] == 0:
-                        score -= 10
-                    if j > 2 and self.board[i][j-1] == (3 - self.turn) and self.board[i][j-2] == (3 - self.turn) and self.board[i][j-3] == 0:
-                        score -= 10
-                    # check vertical
-                    if i < 3 and self.board[i+1][j] == (3 - self.turn) and self.board[i+2][j] == (3 - self.turn) and self.board[i+3][j] == 0:
-                        score -= 10
-                    # check diagonal to the right
-                    if i < 3 and j < 4 and self.board[i+1][j+1] == (3 - self.turn) and self.board[i+2][j+2] == (3 - self.turn) and self.board[i+3][j+3] == 0:
-                        score -= 10
-                    if i > 2 and j > 2 and self.board[i-1][j-1] == (3 - self.turn) and self.board[i-2][j-2] == (3 - self.turn) and self.board[i-3][j-3] == 0:
-                        score -= 10
-                    # check diagonal to the left
-                    if i < 3 and j > 2 and self.board[i+1][j-1] == (3 - self.turn) and self.board[i+2][j-2] == (3 - self.turn) and self.board[i+3][j-3] == 0:
-                        score -= 10
-                    if i > 2 and j < 4 and self.board[i-1][j+1] == (3 - self.turn) and self.board[i-2][j+2] == (3 - self.turn) and self.board[i-3][j+3] == 0:
-                        score -= 10
+                    for direction in directions:
+                        count = 0
+                        for k in range(1, 4):
+                            row = i + direction[0] * k
+                            col = j + direction[1] * k
+                            if 0 <= row < 6 and 0 <= col < 7 and self.board[row][col] == (3 - self.turn):
+                                count += 1
+                            else:
+                                break
+                        if count == 3 and 0 <= i + direction[0] * 4 < 6 and 0 <= j + direction[1] * 4 < 7 and self.board[i + direction[0] * 4][j + direction[1] * 4] == 0:
+                            score -= 10
         return score
 
     # Minimax algorithm
     def minimax(self, depth, maximizing_player):
+        """
+        Returns the optimal evaluation value for the current game state using the minimax algorithm.
+
+        Args:
+            depth (int): The current depth of the search tree.
+            maximizing_player (bool): True if it's the maximizing player's turn, False otherwise.
+
+        Returns:
+            float: The optimal evaluation value for the current game state.
+        """
         # Base case - evaluation at leaf nodes
-        if depth == 0 or self.check_winner():
+        if depth == 0:
             return self.evaluate_board()
-        
+
         # Recursive case - maximizer's turn
         if maximizing_player:
             max_eval = float('-inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.minimax(depth-1, False)
-                    self.undo_move(col)
-                    max_eval = max(max_eval, eval)
+            for col in (col for col in range(7) if self.make_move(col)):
+                eval = self.minimax(depth-1, False)
+                self.undo_move(col)
+                max_eval = max(max_eval, eval)
+                if max_eval == 1:  # Early exit if winning move found
+                    break
             return max_eval
         # Recursive case - minimizer's turn
         else:
             min_eval = float('inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.minimax(depth-1, True)
-                    self.undo_move(col)
-                    min_eval = min(min_eval, eval)          
+            for col in (col for col in range(7) if self.make_move(col)):
+                eval = self.minimax(depth-1, True)
+                self.undo_move(col)
+                min_eval = min(min_eval, eval)
+                if min_eval == -1:  # Early exit if losing move found
+                    break
             return min_eval
     
     # Alpha-beta pruning

@@ -12,6 +12,10 @@ class ConnectFour:
             self.switch_turn()
         # Adds a piece to the lowest empty position in the selected column
         if self.make_move(column):
+            
+            if self.check_winner():
+                return True
+
             self.switch_turn()
             self.computer_move(self.depth)
             return True

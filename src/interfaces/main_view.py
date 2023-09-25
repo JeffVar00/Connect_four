@@ -6,19 +6,22 @@ class Gui:
         self.master = master
         self.game = game
         self.canvas = None
-        self.create_grid()
+
+        self.master.geometry("600x500")  # Establece el tamaño inicial de la ventana
+
+        # Crea un marco para centrar la cuadrícula
+        self.frame = tk.Frame(self.master)
+        self.frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+        self.create_grid(self.frame)
+        self.create_options(self.frame)
         self.selected_column_indicator = None
 
-    def create_grid(self):
+    def create_grid(self, frame):
         """
         Crea la cuadrícula del juego con círculos y botones para las columnas.
         También agrega un campo de entrada para especificar la profundidad de búsqueda.
         """
-        self.master.geometry("600x500")  # Establece el tamaño inicial de la ventana
-
-        # Crea un marco para centrar la cuadrícula
-        frame = tk.Frame(self.master)
-        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
         # Ancho fijo de botones y relleno uniforme
         button_width = 8
@@ -43,6 +46,13 @@ class Gui:
             column_button = tk.Button(frame, text=f"{col+1}", width=button_width, command=lambda col=col: self.make_move(col))
             column_button.grid(row=6, column=col, padx=button_padding_x, pady=button_padding_y)
 
+    def create_options(self, frame):
+        
+        # Ancho fijo de botones y relleno uniforme
+        button_width = 8
+        button_padding_x = 5
+        button_padding_y = 5
+        
         # Crea el menú de opciones debajo de los botones
         option_menu = OptionMenu(frame, StringVar(self.master, "Minimax"), *["Minimax", "AlphaBeta"], command=self.choose_search_algorithm)
         option_menu.grid(row=7, column=0, columnspan=7, pady=button_padding_y)
@@ -99,7 +109,7 @@ class Gui:
 
                 # Reinicia el lienzo y el tablero excepto la opción
                 self.canvas.delete("all")
-                self.create_grid()
+                self.create_grid(self.frame)
                 self.game.reset()
 
 

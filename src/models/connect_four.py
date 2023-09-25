@@ -8,6 +8,8 @@ class ConnectFour:
         self.depth = 4 # default depth for minimax and alpha-beta pruning
 
     def player_move(self, column):
+        if self.turn != 1:
+            self.switch_turn()
         # Adds a piece to the lowest empty position in the selected column
         if self.make_move(column):
             self.switch_turn()
@@ -51,7 +53,6 @@ class ConnectFour:
                     
         if best_col != -1:
             self.make_move(best_col)
-            self.switch_turn()
     
     def check_winner(self):
         # Verifies if a player has won

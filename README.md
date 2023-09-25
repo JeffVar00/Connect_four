@@ -41,7 +41,7 @@ Connect Four es una implementación del popular juego "Cuatro en Línea" con una
     pip install tkinter numpy
     ```
 
-🎮 Uso
+## 🎮 Uso
 
 1. Ejecute el archivo main.py:
 
@@ -49,7 +49,7 @@ Connect Four es una implementación del popular juego "Cuatro en Línea" con una
    python3 .\main.py
    ```
    
-📝 Consideraciones sobre la Profundidad
+## 📝 Consideraciones sobre la Profundidad
 
 Algunos aspectos a considerar al ajustar la profundidad en los algoritmos Minimax y Alpha-Beta:
 

@@ -1,6 +1,3 @@
-<div align="center">
-  <img src="connect_four_logo.png" alt="Connect Four Logo" width="200">
-</div>
 
 ---
 

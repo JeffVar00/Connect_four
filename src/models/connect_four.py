@@ -7,6 +7,10 @@ class ConnectFour:
         self.search_algorithm = "Minimax"  # default search algorithm
         self.depth = 4 # default depth for minimax and alpha-beta pruning
 
+    def reset(self):
+        self.board = np.zeros((6, 7))
+        self.turn = 1
+
     def player_move(self, column):
         if self.turn != 1:
             self.switch_turn()

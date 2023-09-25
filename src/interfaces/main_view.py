@@ -7,7 +7,6 @@ class Gui:
         self.game = game
         self.canvas = None
         self.create_grid()
-        self.create_option_menu()
         self.selected_column_indicator = None
 
     def create_grid(self):

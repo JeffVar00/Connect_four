@@ -7,9 +7,19 @@ class ConnectFour:
         self.search_algorithm = "Minimax"  # default search algorithm
         self.depth = 4 # default depth for minimax and alpha-beta pruning
 
+    def reset(self):
+        self.board = np.zeros((6, 7))
+        self.turn = 1
+
     def player_move(self, column):
+        if self.turn != 1:
+            self.switch_turn()
         # Adds a piece to the lowest empty position in the selected column
         if self.make_move(column):
+            
+            if self.check_winner():
+                return True
+
             self.switch_turn()
             self.computer_move(self.depth)
             return True
@@ -51,7 +61,6 @@ class ConnectFour:
                     
         if best_col != -1:
             self.make_move(best_col)
-            self.switch_turn()
     
     def check_winner(self):
         # Verifies if a player has won

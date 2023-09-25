@@ -2,19 +2,28 @@ import numpy as np
 
 class ConnectFour:
     def __init__(self):
-        self.board = np.zeros((6, 7))  # A 6x7 matrix to represent the board
-        self.turn = 1  # player 1 goes first
-        self.search_algorithm = "Minimax"  # default search algorithm
-        self.depth = 4 # default depth for minimax and alpha-beta pruning
+        self.board = np.zeros((6, 7))  # Matriz 6x7 para representar el tablero
+        self.turn = 1  # Jugador 1 comienza primero
+        self.search_algorithm = "Minimax"  # Algoritmo de búsqueda predeterminado
+        self.depth = 4  # Profundidad predeterminada para minimax y poda alfa-beta
+
 
     def reset(self):
+        """
+        Reinicia el juego, estableciendo el tablero en blanco y el turno en el jugador 1.
+        """
         self.board = np.zeros((6, 7))
         self.turn = 1
 
     def player_move(self, column):
+        
+        """
+        Maneja los movimientos del jugador y actualiza la interfaz gráfica.
+        """
+
         if self.turn != 1:
             self.switch_turn()
-        # Adds a piece to the lowest empty position in the selected column
+        
         if self.make_move(column):
             
             if self.check_winner():
@@ -26,14 +35,19 @@ class ConnectFour:
         else:
             return False
         
-    # Verifies if a move is valid
     def is_valid_move(self, column):
+        """
+        Verifica si un movimiento es válido.
+        """
         return self.board[0][column] == 0
 
     def make_move(self, column):
-        # Adds a piece to the lowest empty position in the selected column
+        """
+        Agrega una pieza a la posición más baja vacía en la columna seleccionada
+        """
+        
         if self.board[0][column] != 0:
-            # column is full, invalid move
+            # Movimiento inválido
             return False
         else:
             for row in range(5, -1, -1):
@@ -42,12 +56,22 @@ class ConnectFour:
                     return True
                 
     def undo_move(self, column):
+        
+        """
+        Deshace el último movimiento del jugador de la computadora.
+        """
+
         for row in range(6):
             if self.board[row][column] != 0:
                 self.board[row][column] = 0
                 break
                 
     def computer_move(self, depth):
+        
+        """
+        Elige el mejor movimiento para el jugador de la computadora y lo hace.
+        """
+
         best_score = float('-inf')
         best_col = -1
 
@@ -68,19 +92,21 @@ class ConnectFour:
             self.make_move(best_col)
     
     def check_winner(self):
-        # Verifies if a player has won
+        """
+        Verifica si un jugador ha ganado.
+        """
         for i in range(6):
             for j in range(7):
-                # check horizontal
+                # Verifica horizontalmente
                 if j < 4 and self.board[i][j] == self.turn and self.board[i][j+1] == self.turn and self.board[i][j+2] == self.turn and self.board[i][j+3] == self.turn:
                     return True
-                # check vertical
+                # Verifica verticalmente
                 if i < 3 and self.board[i][j] == self.turn and self.board[i+1][j] == self.turn and self.board[i+2][j] == self.turn and self.board[i+3][j] == self.turn:
                     return True
-                # check diagonal to the right
+                # Verifica diagonal a la derecha
                 if i < 3 and j < 4 and self.board[i][j] == self.turn and self.board[i+1][j+1] == self.turn and self.board[i+2][j+2] == self.turn and self.board[i+3][j+3] == self.turn:
                     return True
-                # check diagonal to the left
+                # Verifica diagonal a la izquierda
                 if i < 3 and j > 2 and self.board[i][j] == self.turn and self.board[i+1][j-1] == self.turn and self.board[i+2][j-2] == self.turn and self.board[i+3][j-3] == self.turn:
                     return True
         return False
@@ -88,41 +114,50 @@ class ConnectFour:
     def switch_turn(self):
         self.turn = 3 - self.turn  # Alternar entre el jugador 1 (1) y el jugador 2 (2)
 
-    # Evaluation function for Minimax and Alpha-Beta pruning
     def evaluate_board(self):
+
+        """
+        Evalúa el tablero actual y devuelve un puntaje.
+        """
+
         score = 0
 
         for i in range(6):
             for j in range(7):
                 if self.board[i][j] == self.turn:
-                    # Favor moves that create opportunities for the player to win
+                    # Movimientos que favorecen al jugador
                     score += self.score_position(i, j)
 
                 elif self.board[i][j] == 3 - self.turn:
-                    # Favor moves that block the opponent's potential wins
+                    # Movimientos que bloquean al oponente
                     score -= self.score_position(i, j)
 
         return score
 
     def score_position(self, row, col):
+        
+        """
+        Evalúa una posición en el tablero y devuelve un puntaje.
+        """
+
         score = 0
 
-        # Check horizontally
+        # Verifica horizontalmente
         if col + 3 < 7:
             window = [self.board[row][col + offset] for offset in range(4)]
             score += self.evaluate_window(window)
 
-        # Check vertically
+        # Verifica verticalmente
         if row + 3 < 6:
             window = [self.board[row + offset][col] for offset in range(4)]
             score += self.evaluate_window(window)
 
-        # Check diagonally (positive slope)
+        # Verifica diagonalmente (pendiente positiva)
         if col + 3 < 7 and row + 3 < 6:
             window = [self.board[row + offset][col + offset] for offset in range(4)]
             score += self.evaluate_window(window)
 
-        # Check diagonally (negative slope)
+        # Verifica diagonalmente (pendiente negativa)
         if col - 3 >= 0 and row + 3 < 6:
             window = [self.board[row + offset][col - offset] for offset in range(4)]
             score += self.evaluate_window(window)
@@ -130,80 +165,90 @@ class ConnectFour:
         return score
 
     def evaluate_window(self, window):
+
+        """
+        Evalúa una ventana (ventana de 4 piezas) en el tablero.
+        """
+
         player_pieces = window.count(self.turn)
         opponent_pieces = window.count(3 - self.turn)
         empty_spaces = window.count(0)
 
         if player_pieces == 4:
-            return 1000  # Player can win
+            return 1000  # El jugador puede ganar
         elif opponent_pieces == 4:
-            return -1000  # Opponent can win
+            return -1000  # El oponente puede ganar
         elif player_pieces == 3 and empty_spaces == 1:
-            return 5  # Player has a strong chance to win
+            return 5  # El jugador tiene una fuerte oportunidad de ganar
         elif opponent_pieces == 3 and empty_spaces == 1:
-            return -5  # Opponent has a strong chance to win
+            return -5  # El oponente tiene una fuerte oportunidad de ganar
         elif player_pieces == 2 and empty_spaces == 2:
-            return 2  # Player has a potential move
+            return 2  # El jugador tiene un movimiento ventajoso
         elif opponent_pieces == 2 and empty_spaces == 2:
-            return -2  # Opponent has a potential move
+            return -2  # El oponente tiene ventaja
         else:
-            return 0  # No immediate advantage
+            return 0  # No hay ventaja
 
     def is_board_full(self):
         return all(self.board[0][col] != 0 for col in range(7))
 
-    # Minimax algorithm
     def minimax(self, depth, maximizing_player):
-        # Base case - evaluation at leaf nodes
-        if depth == 0 or self.check_winner():
+
+        """
+        Implementación del algoritmo Minimax.
+        """
+
+        if depth == 0 or self.check_winner() or self.is_board_full():
             return self.evaluate_board()
-        
-        # Recursive case - maximizer's turn
-        if maximizing_player:
-            max_eval = float('-inf')
-            for col in (col for col in range(7) if self.make_move(col)):
-                eval = self.minimax(depth-1, False)
+
+        best_score = float('-inf') if maximizing_player else float('inf')
+        best_col = -1
+
+        for col in range(7):
+            if self.is_valid_move(col):
+                self.make_move(col)
+                score = self.minimax(depth - 1, not maximizing_player)
                 self.undo_move(col)
-                max_eval = max(max_eval, eval)
-                if max_eval == 1:  # Early exit if winning move found
-                    break
-            return max_eval
-        # Recursive case - minimizer's turn
-        else:
-            min_eval = float('inf')
-            for col in (col for col in range(7) if self.make_move(col)):
-                eval = self.minimax(depth-1, True)
-                self.undo_move(col)
-                min_eval = min(min_eval, eval)
-                if min_eval == -1:  # Early exit if losing move found
-                    break     
-            return min_eval
+
+                if maximizing_player:
+                    best_score = max(best_score, score)
+                    if best_score == 1:  # Se sale antes si se encuentra un movimiento ganador
+                        return best_score
+                else:
+                    best_score = min(best_score, score)
+                    if best_score == -1:  # Se sale antes si el movimiento es muy malo
+                        return best_score
+
+        return best_score
     
     # Alpha-beta pruning
     def alpha_beta(self, depth, alpha, beta, maximizing_player):
-        # Base case - evaluation at leaf nodes
-        if depth == 0 or self.check_winner():
-            return self.evaluate_board()
         
-        if maximizing_player:
-            max_eval = float('-inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.alpha_beta(depth-1, alpha, beta, False)
-                    self.undo_move(col)
-                    max_eval = max(max_eval, eval)
-                    alpha = max(alpha, eval)
+        """
+        Implementación del algoritmo Alpha-Beta pruning.
+        """
+
+        if depth == 0 or self.check_winner() or self.is_board_full():
+            return self.evaluate_board()
+
+        best_score = float('-inf') if maximizing_player else float('inf')
+        best_col = -1
+
+        for col in range(7):
+            if self.is_valid_move(col):
+                self.make_move(col)
+                score = self.alpha_beta(depth - 1, alpha, beta, not maximizing_player)
+                self.undo_move(col)
+
+                if maximizing_player:
+                    best_score = max(best_score, score)
+                    alpha = max(alpha, score)
                     if beta <= alpha:
                         break
-            return max_eval
-        else:
-            min_eval = float('inf')
-            for col in range(7):
-                if self.make_move(col):
-                    eval = self.alpha_beta(depth-1, alpha, beta, True)
-                    self.undo_move(col)
-                    min_eval = min(min_eval, eval)
-                    beta = min(beta, eval)
+                else:
+                    best_score = min(best_score, score)
+                    beta = min(beta, score)
                     if beta <= alpha:
                         break
-            return min_eval
+
+        return best_score

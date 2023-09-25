@@ -4,8 +4,8 @@
 <h1 align="center">Connect Four</h1>
 
 <p align="center">
-  <img alt="GitHub" src="https://img.shields.io/github/license/tuusuario/connect-four?color=blue">
-  <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/tuusuario/connect-four?color=green">
+  <img alt="GitHub" src="https://img.shields.io/github/license/JeffVar00/Connect_four?color=blue">
+  <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/JeffVar00/Connect_four?color=green">
 </p>
 
 ## 📜 Descripción
@@ -21,20 +21,20 @@ Connect Four es una implementación del popular juego "Cuatro en Línea" con una
 
 1. Clone este repositorio en su máquina local.
 
-   ```bash
+   ```sh
    git clone https://github.com/JeffVar00/Connect_four.git
 
 2. Asegúrese de tener Python 3 instalado en su sistema.
 
 3. Navegue al directorio del proyecto:
 
-   ```bash
+   ```sh
    cd Connect_four
    ```
 
 4. Instale las dependencias necesarias:
 
-   ```bash
+   ```sh
     pip install tkinter numpy
     ```
 
@@ -42,7 +42,7 @@ Connect Four es una implementación del popular juego "Cuatro en Línea" con una
 
 1. Ejecute el archivo main.py:
 
-   ```bash
+   ```sh
    python3 .\main.py
    ```
    

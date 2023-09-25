@@ -25,6 +25,10 @@ class ConnectFour:
             return True
         else:
             return False
+        
+    # Verifies if a move is valid
+    def is_valid_move(self, column):
+        return self.board[0][column] == 0
 
     def make_move(self, column):
         # Adds a piece to the lowest empty position in the selected column
@@ -48,7 +52,8 @@ class ConnectFour:
         best_col = -1
 
         for col in range(7):
-            if self.make_move(col):
+            if self.is_valid_move(col):
+                self.make_move(col)
                 if self.search_algorithm == "AlphaBeta":
                     score = self.alpha_beta(depth, float('-inf'), float('inf'), False)
                 else:
@@ -86,53 +91,73 @@ class ConnectFour:
     # Evaluation function for Minimax and Alpha-Beta pruning
     def evaluate_board(self):
         score = 0
-        directions = [(0, 1), (0, -1), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
+
         for i in range(6):
             for j in range(7):
                 if self.board[i][j] == self.turn:
-                    # favor moves that block the opponent's potential wins
-                    for direction in directions:
-                        count = 0
-                        for k in range(1, 4):
-                            row = i + direction[0] * k
-                            col = j + direction[1] * k
-                            if 0 <= row < 6 and 0 <= col < 7 and self.board[row][col] == self.turn:
-                                count += 1
-                            else:
-                                break
-                        if count == 3 and 0 <= i + direction[0] * 4 < 6 and 0 <= j + direction[1] * 4 < 7 and self.board[i + direction[0] * 4][j + direction[1] * 4] == 0:
-                            score += 1
+                    # Favor moves that create opportunities for the player to win
+                    score += self.score_position(i, j)
+
                 elif self.board[i][j] == 3 - self.turn:
-                    # favor moves that result in the opponent being unable to block our win
-                    for direction in directions:
-                        count = 0
-                        for k in range(1, 4):
-                            row = i + direction[0] * k
-                            col = j + direction[1] * k
-                            if 0 <= row < 6 and 0 <= col < 7 and self.board[row][col] == (3 - self.turn):
-                                count += 1
-                            else:
-                                break
-                        if count == 3 and 0 <= i + direction[0] * 4 < 6 and 0 <= j + direction[1] * 4 < 7 and self.board[i + direction[0] * 4][j + direction[1] * 4] == 0:
-                            score -= 10
+                    # Favor moves that block the opponent's potential wins
+                    score -= self.score_position(i, j)
+
         return score
+
+    def score_position(self, row, col):
+        score = 0
+
+        # Check horizontally
+        if col + 3 < 7:
+            window = [self.board[row][col + offset] for offset in range(4)]
+            score += self.evaluate_window(window)
+
+        # Check vertically
+        if row + 3 < 6:
+            window = [self.board[row + offset][col] for offset in range(4)]
+            score += self.evaluate_window(window)
+
+        # Check diagonally (positive slope)
+        if col + 3 < 7 and row + 3 < 6:
+            window = [self.board[row + offset][col + offset] for offset in range(4)]
+            score += self.evaluate_window(window)
+
+        # Check diagonally (negative slope)
+        if col - 3 >= 0 and row + 3 < 6:
+            window = [self.board[row + offset][col - offset] for offset in range(4)]
+            score += self.evaluate_window(window)
+
+        return score
+
+    def evaluate_window(self, window):
+        player_pieces = window.count(self.turn)
+        opponent_pieces = window.count(3 - self.turn)
+        empty_spaces = window.count(0)
+
+        if player_pieces == 4:
+            return 1000  # Player can win
+        elif opponent_pieces == 4:
+            return -1000  # Opponent can win
+        elif player_pieces == 3 and empty_spaces == 1:
+            return 5  # Player has a strong chance to win
+        elif opponent_pieces == 3 and empty_spaces == 1:
+            return -5  # Opponent has a strong chance to win
+        elif player_pieces == 2 and empty_spaces == 2:
+            return 2  # Player has a potential move
+        elif opponent_pieces == 2 and empty_spaces == 2:
+            return -2  # Opponent has a potential move
+        else:
+            return 0  # No immediate advantage
+
+    def is_board_full(self):
+        return all(self.board[0][col] != 0 for col in range(7))
 
     # Minimax algorithm
     def minimax(self, depth, maximizing_player):
-        """
-        Returns the optimal evaluation value for the current game state using the minimax algorithm.
-
-        Args:
-            depth (int): The current depth of the search tree.
-            maximizing_player (bool): True if it's the maximizing player's turn, False otherwise.
-
-        Returns:
-            float: The optimal evaluation value for the current game state.
-        """
         # Base case - evaluation at leaf nodes
-        if depth == 0:
+        if depth == 0 or self.check_winner():
             return self.evaluate_board()
-
+        
         # Recursive case - maximizer's turn
         if maximizing_player:
             max_eval = float('-inf')
@@ -151,7 +176,7 @@ class ConnectFour:
                 self.undo_move(col)
                 min_eval = min(min_eval, eval)
                 if min_eval == -1:  # Early exit if losing move found
-                    break
+                    break     
             return min_eval
     
     # Alpha-beta pruning

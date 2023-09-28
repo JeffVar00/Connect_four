@@ -58,8 +58,8 @@ class Gui:
         option_menu.grid(row=7, column=0, columnspan=7, pady=button_padding_y)
 
         # Crea un campo de texto llamado "depth" para escribir la profundidad de la búsqueda y validarlo siempre como un número, con un valor predeterminado de 4
-        depth = StringVar(self.master, "4")
-        depth.trace("w", lambda name, index, mode, depth=depth: self.validate_depth(depth))
+        depth = StringVar(self.master, "6")
+        depth.trace("w", lambda depth=depth: self.validate_depth(depth))
         depth_entry = tk.Entry(frame, textvariable=depth, width=button_width)
         depth_entry.grid(row=8, column=0, columnspan=7, pady=button_padding_y)
 

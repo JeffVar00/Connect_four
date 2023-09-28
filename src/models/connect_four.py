@@ -67,41 +67,66 @@ class ConnectFour:
                 break
 
     def computer_move(self):
+
+        best_move = -1
+        best_value = float('-inf')
+
         if self.search_algorithm == "Minimax":
-            _, chosen_column = self.minimax(self.depth, True)
-        elif self.search_algorithm == "AlphaBeta":
-            _, chosen_column = self.alpha_beta(self.depth, -np.inf, np.inf, True)
-        self.make_move(chosen_column)
 
-    def minimax(self, depth, is_maximizing):
-        if self.is_board_full() or self.check_winner() or depth == 0:
-            return self.evaluate_the_board(), None
+            print("Minimax")
             
-        if is_maximizing:
-            value = -np.inf
-            column = np.random.choice([c for c in range(7) if self.is_valid_move(c)])
             for col in range(7):
-                if self.is_valid_move(col):
+                if self.board[0][col] == 0:
                     self.make_move(col)
-                    new_score, _ = self.minimax(depth-1, False)
-                    if new_score > value:
-                        value = new_score
-                        column = col
+                    self.switch_turn()
+                    move_value = self.minimax(
+                        self.depth - 1, float('-inf'), float('inf'), False)
                     self.undo_move(col)
-            return value, column
+                    self.switch_turn()
+                    if move_value > best_value:
+                        best_move = col
+                        best_value = move_value
+        
+        elif self.search_algorithm == "AlphaBeta":
+            chosen_column = self.alpha_beta(self.depth, -np.inf, np.inf, True)
 
-        else: # Minimizing player
-            value = np.inf
-            column = np.random.choice([c for c in range(7) if self.is_valid_move(c)])
+        self.make_move(best_move)
+
+    def minimax(self, depth, alpha, beta, is_maximizing):
+        if self.is_board_full() or self.check_winner() or depth == 0:
+            return self.evaluate_the_board()
+        
+        if is_maximizing:
+            max_result = float('-inf')
             for col in range(7):
-                if self.is_valid_move(col):
+                if self.board[0][col] == 0:
                     self.make_move(col)
-                    new_score, _ = self.minimax(depth-1, True)
-                    if new_score < value:
-                        value = new_score
-                        column = col
+                    self.switch_turn()
+                    evaluation = self.minimax(depth - 1, alpha, beta, False)
                     self.undo_move(col)
-            return value, column
+                    self.switch_turn()
+                    max_result = max(max_result, evaluation)
+                    alpha = max(alpha, evaluation)
+                    if beta <= alpha:
+                        break
+
+            return max_result
+        
+        min_result = float('inf')
+        for col in range(7):
+            if self.board[0][col] == 0:
+                self.make_move(col)
+                self.switch_turn()
+                evaluation = self.minimax(depth - 1, alpha, beta, True)
+                self.undo_move(col)
+                self.switch_turn()
+                min_result = min(min_result, evaluation)
+                beta = min(beta, evaluation)
+                if beta <= alpha:
+                    break
+
+        return min_result
+            
         
     def alpha_beta(self, depth, alpha, beta, is_maximizing):
         if self.is_board_full() or self.check_winner() or depth == 0:
@@ -140,29 +165,14 @@ class ConnectFour:
             return value, column
         
     def evaluate_the_board(self):
-        # Matriz de puntuaciones para los posibles escenarios
-        scores = [[3, 4, 5, 7, 5, 4, 3],
-                    [4, 6, 8, 10, 8, 6, 4],
-                    [5, 8, 11, 13, 11, 8, 5],
-                    [5, 8, 11, 13, 11, 8, 5],
-                    [4, 6, 8, 10, 8, 6, 4],
-                    [3, 4, 5, 7, 5, 4, 3]]
-
-        score = 0
-
-        # Evaluar el tablero para el jugador 1 (oponente)
-        for row in range(self.board.shape[0]):
-            for col in range(self.board.shape[1]):
-                if self.board[row, col] == 1:
-                    score -= scores[row][col]
-
-        # Evaluar el tablero para el jugador 2 (IA)
-        for row in range(self.board.shape[0]):
-            for col in range(self.board.shape[1]):
-                if self.board[row, col] == 2:
-                    score += scores[row][col]
-
-        return score
+        """
+        Evalua el tablero, aqui suponemos que 2 es la IA y 1 el jugador
+        """
+        if self.turn == 2:
+            return 1
+        if self.turn == 1:
+            return -1
+        return 0
 
     def check_winner(self):
         """

@@ -57,11 +57,25 @@ class Gui:
         option_menu = OptionMenu(frame, StringVar(self.master, "Minimax"), *["Minimax", "AlphaBeta"], command=self.choose_search_algorithm)
         option_menu.grid(row=7, column=0, columnspan=7, pady=button_padding_y)
 
-        # Crea un campo de texto llamado "depth" para escribir la profundidad de la búsqueda y validarlo siempre como un número, con un valor predeterminado de 4
+        # Crea un campo de texto llamado "depth" numerico no modificable con opcion para subir o bajar el valor (de dos en dos)
         depth = StringVar(self.master, "6")
         depth.trace("w", lambda depth=depth: self.validate_depth(depth))
-        depth_entry = tk.Entry(frame, textvariable=depth, width=button_width)
-        depth_entry.grid(row=8, column=0, columnspan=7, pady=button_padding_y)
+
+        depth_entry = tk.Entry(frame, textvariable=depth, width=button_width, state="readonly")
+        depth_entry.grid(row=8, column=1, columnspan=5, pady=button_padding_y)
+
+        decrease_button = tk.Button(frame, text="-", width=button_padding_x, command=lambda: self.change_depth(-2, depth))
+        decrease_button.grid(row=8, column=0, columnspan=5, pady=button_padding_y)  # Colocado en la columna 0
+
+        increase_button = tk.Button(frame, text="+", width=button_padding_x, command=lambda: self.change_depth(2, depth))
+        increase_button.grid(row=8, column=2, columnspan=5, pady=button_padding_y)  # Colocado en la columna 2
+
+    # Agrega esta función para cambiar la profundidad
+    def change_depth(self, increment, depth):
+        current_depth = int(depth.get())
+        new_depth = current_depth + increment
+        if new_depth >= 0:  # Asegúrate de que no sea negativo
+            depth.set(new_depth)
 
 
     def validate_depth(self, depth):

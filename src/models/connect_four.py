@@ -80,7 +80,7 @@ class ConnectFour:
                     self.make_move(col)
                     self.switch_turn()
                     move_value = self.minimax(
-                        self.depth - 1, float('-inf'), float('inf'), False)
+                        self.depth - 1, False)
                     self.undo_move(col)
                     self.switch_turn()
                     if move_value > best_value:
@@ -88,21 +88,63 @@ class ConnectFour:
                         best_value = move_value
         
         elif self.search_algorithm == "AlphaBeta":
-            chosen_column = self.alpha_beta(self.depth, -np.inf, np.inf, True)
+
+            print("Alpha Beta")
+
+            for col in range(7):
+                if self.board[0][col] == 0:
+                    self.make_move(col)
+                    self.switch_turn()
+                    move_value = self.alpha_beta(
+                        self.depth - 1, -np.inf, np.inf, False)
+                    self.undo_move(col)
+                    self.switch_turn()
+                    if move_value > best_value:
+                        best_move = col
+                        best_value = move_value
 
         self.make_move(best_move)
 
-    def minimax(self, depth, alpha, beta, is_maximizing):
+    def minimax(self, depth, is_maximizing):
         if self.is_board_full() or self.check_winner() or depth == 0:
             return self.evaluate_the_board()
         
+        if is_maximizing:
+            max_eval = float('-inf')
+            for col in range(7):
+                if self.is_valid_move(col):
+                    self.make_move(col)
+                    self.switch_turn()
+                    eval = self.minimax(depth - 1, False)
+                    self.undo_move(col)
+                    self.switch_turn()
+                    max_eval = max(max_eval, eval)
+            return max_eval
+
+        else:
+            min_eval = float('inf')
+            for col in range(7):
+                if self.is_valid_move(col):
+                    self.make_move(col)
+                    self.switch_turn()
+                    eval = self.minimax(depth - 1, True)
+                    self.undo_move(col)
+                    self.switch_turn()
+                    min_eval = min(min_eval, eval)
+            return min_eval
+            
+        
+    def alpha_beta(self, depth, alpha, beta, is_maximizing):
+        if self.is_board_full() or self.check_winner() or depth == 0:
+            return self.evaluate_the_board()
+
         if is_maximizing:
             max_result = float('-inf')
             for col in range(7):
                 if self.board[0][col] == 0:
                     self.make_move(col)
                     self.switch_turn()
-                    evaluation = self.minimax(depth - 1, alpha, beta, False)
+                    evaluation = self.alpha_beta(depth - 1, alpha, beta, False)
                     self.undo_move(col)
                     self.switch_turn()
                     max_result = max(max_result, evaluation)
@@ -117,7 +159,7 @@ class ConnectFour:
             if self.board[0][col] == 0:
                 self.make_move(col)
                 self.switch_turn()
-                evaluation = self.minimax(depth - 1, alpha, beta, True)
+                evaluation = self.alpha_beta(depth - 1, alpha, beta, True)
                 self.undo_move(col)
                 self.switch_turn()
                 min_result = min(min_result, evaluation)
@@ -126,43 +168,6 @@ class ConnectFour:
                     break
 
         return min_result
-            
-        
-    def alpha_beta(self, depth, alpha, beta, is_maximizing):
-        if self.is_board_full() or self.check_winner() or depth == 0:
-            return self.evaluate_the_board(), None
-
-        if is_maximizing:
-            value = -np.inf
-            column = np.random.choice([c for c in range(7) if self.is_valid_move(c)])
-            for col in range(7):
-                if self.is_valid_move(col):
-                    self.make_move(col)
-                    new_score, _ = self.alpha_beta(depth-1, alpha, beta, False)
-                    if new_score > value:
-                        value = new_score
-                        column = col
-                    alpha = max(alpha, value)
-                    self.undo_move(col)
-                    if alpha >= beta:
-                        break
-            return value, column
-            
-        else: # Minimizing player
-            value = np.inf
-            column = np.random.choice([c for c in range(7) if self.is_valid_move(c)])
-            for col in range(7):
-                if self.is_valid_move(col):
-                    self.make_move(col)
-                    new_score, _ = self.alpha_beta(depth-1, alpha, beta, True)
-                    if new_score < value:
-                        value = new_score
-                        column = col
-                    beta = min(beta, value)
-                    self.undo_move(col)
-                    if beta <= alpha:
-                        break
-            return value, column
         
     def evaluate_the_board(self):
         """
